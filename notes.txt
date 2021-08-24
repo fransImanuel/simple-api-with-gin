@@ -1,0 +1,14 @@
+os.Setenv("user","jack")
+	os.Setenv("password","secret")
+	os.Setenv("host","pg.example.com")
+	os.Setenv("port","5432")
+	os.Setenv("dbname","mydb")
+	os.Setenv("sslmode","verify-ca")
+	os.Setenv("pool_max_conns","10")
+	conn, err := pgx.Connect(context.Background(), os.Getenv("user"),
+													os.Getenv("password"),
+													os.Getenv("host"),
+													os.Getenv("port"),
+													os.Getenv("dbname"),
+													os.Getenv("sslmode"),
+													os.Getenv("pool_max_conns"))
