@@ -8,14 +8,16 @@ import (
 	"github.com/jackc/pgx/v4/pgxpool"
 )
 
-func ConnectToDB() {
+func ConnectToDB() (Dbpool *pgxpool.Pool) {
 
-	dbpool, err := pgxpool.Connect(context.Background(), "postgres://postgres:d3v3l0p8015@35.187.248.198:5432/CenturyNet?sslmode=disable&pool_max_conns=10")
+	Dbpool, err := pgxpool.Connect(context.Background(), "postgres://postgres:d3v3l0p8015@35.187.248.198:5432/CenturyNet?sslmode=disable&pool_max_conns=10")
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
 		os.Exit(1)
 	}
-	defer dbpool.Close()
+	// defer Dbpool.Close()
+
+	return Dbpool
 
 	// config, err := pgxpool.ParseConfig(os.Getenv("postgres://postgres:d3v3l0p8015@35.187.248.198:5432/CenturyNet?sslmode=disable&pool_max_conns=10"))
 	// if err != nil {
@@ -28,13 +30,13 @@ func ConnectToDB() {
 
 	// pool, err := pgxpool.ConnectConfig(context.Background(), config)
 
-	var greeting string
-	err = dbpool.QueryRow(context.Background(), "select 'Hello, world!'").Scan(&greeting)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "QueryRow failed: %v\n", err)
-		os.Exit(1)
-	}
+	// var greeting string
+	// err = Dbpool.QueryRow(context.Background(), "select 'Hello, world!'").Scan(&greeting)
+	// if err != nil {
+	// 	fmt.Fprintf(os.Stderr, "QueryRow failed: %v\n", err)
+	// 	os.Exit(1)
+	// }
 
-	fmt.Println(greeting)
+	// fmt.Println(greeting)
 
 }
