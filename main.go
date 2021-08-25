@@ -1,20 +1,16 @@
 package main
 
 import (
-	"context"
+	car "go-simple-api/Routes"
 	"go-simple-api/handler"
-	"os"
 
 	"github.com/gin-gonic/gin"
-	"github.com/jackc/pgx/v4"
 )
 
-
 func main() {
-	conn, err := pgx.Connect(context.Background(), "user=jack password=secret host=pg.example.com port=5432 dbname=mydb sslmode=verify-ca pool_max_conns=10")
-
 	router := gin.Default()
 
+	//API without connection to database
 	router.GET("/", handler.FirstLanding)
 	router.GET("/DummyGet", handler.DummyGet)
 	router.GET("/DummyGetByID/:id/Rating", handler.DummyGetByID)
@@ -22,6 +18,9 @@ func main() {
 	router.POST("/DummyPost", handler.DummyPost)
 	router.PUT("/DummyPut/:id", handler.DummyPut)
 	router.DELETE("/DummyDelete/:id", handler.DummyDelete)
+
+	//API with CRUD to Databases(postgres)
+	router.GET("/car", car.CreateCar)
 
 	router.Run("localhost:8080")
 }
@@ -32,8 +31,8 @@ func main() {
 //     "title" : "Harry Potter 5",
 //     "artist" : "J.K Rowling5",
 //     "price" : 50000,
-	// "Rating" : {
-	// 	"Alibaba" : "5/5" 
-	// 	"Google" : "5/5"
-	// }
+// "Rating" : {
+// 	"Alibaba" : "5/5"
+// 	"Google" : "5/5"
+// }
 // }
