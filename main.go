@@ -2,10 +2,13 @@ package main
 
 import (
 	car "go-simple-api/Routes"
+	car2 "go-simple-api/cars"
 	"go-simple-api/handler"
 
 	"github.com/gin-gonic/gin"
 )
+
+
 
 func main() {
 	router := gin.Default()
@@ -20,7 +23,13 @@ func main() {
 	router.DELETE("/DummyDelete/:id", handler.DummyDelete)
 
 	//API with CRUD to Databases(postgres)
-	router.GET("/car", car.CreateCar)
+	//null with interface marshaljson
+	router.GET("/car", car.ReadCar)
+	//null with pointer
+	router.GET("/car2", car2.ReadCar)
+	router.POST("/car", car.CreateCar)
+	router.PUT("/car/:id", car.UpdateCar)
+	router.DELETE("/car/:id", car.DeleteCar)
 
 	router.Run("localhost:8080")
 }
