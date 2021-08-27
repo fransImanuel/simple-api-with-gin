@@ -8,18 +8,18 @@ import (
 	"go-simple-api/db"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
 
-type NullString struct{
+type NullString struct {
 	sql.NullString
 }
 
-type NullInt32 struct{
+type NullInt32 struct {
 	sql.NullInt32
 }
-	
 
 func (s NullInt32) MarshalJSON() ([]byte, error) {
 	fmt.Println("Masuk ke MarshalJSON() NullInt32")
@@ -57,11 +57,11 @@ func (s *NullString) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-type Cart struct{
-	Car_ID	NullString
-	Name 	NullString
+type Cart struct {
+	Car_ID           NullString
+	Name             NullString
 	Rent_Price_Daily NullString
-	Stock 	NullInt32
+	Stock            NullInt32
 }
 
 //Read
@@ -70,71 +70,71 @@ func ReadCar(c *gin.Context) {
 	defer dbpool.Close()
 	var carts []Cart
 
-	
-	rows, err := dbpool.Query(context.Background(),`select * from "Cars"`)
+	rows, err := dbpool.Query(context.Background(), `select * from "Cars"`)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer rows.Close()
-	
+
 	for rows.Next() {
 		var cart Cart
-		err:=rows.Scan(&cart.Car_ID, &cart.Name, &cart.Rent_Price_Daily, &cart.Stock)
-		if err!=nil {
+		err := rows.Scan(&cart.Car_ID, &cart.Name, &cart.Rent_Price_Daily, &cart.Stock)
+		if err != nil {
 			log.Fatal(err)
 		}
-		carts = append(carts,cart)
+		carts = append(carts, cart)
 	}
 	fmt.Println("TEST")
 	c.JSON(http.StatusOK, carts)
 }
 
 //Create
-func CreateCar(c *gin.Context){
+func CreateCar(c *gin.Context) {
 	dbpool := db.ConnectToDB()
 	defer dbpool.Close()
 
 	var jsonData Cart
 	jsonByte, err := c.GetRawData()
-	if err!=nil {
+	if err != nil {
 		panic(err)
 	}
 
 	json.Unmarshal(jsonByte, &jsonData)
+	name := strings.Trim(jsonData.Name.String, `"`)
+	// fmt.Println(strings.Trim(jsonData.Name.String, `"`))
 
 	id := 0
 	sqlQuery := `
 		INSERT INTO "Cars" ("Car_ID","Name","Rent_Price_Daily","Stock")
 		VALUES ($1,$2,$3,$4) returning "Car_ID";
 	`
-	result := dbpool.QueryRow(context.Background(),sqlQuery, 
-							jsonData.Car_ID.String,
-							jsonData.Name.String,
-							jsonData.Rent_Price_Daily.String,
-							jsonData.Stock.Int32,).Scan(&id)
-	fmt.Println(result)
+	dbpool.QueryRow(context.Background(), sqlQuery,
+		jsonData.Car_ID.String,
+		name,
+		jsonData.Rent_Price_Daily.String,
+		jsonData.Stock.Int32).Scan(&id)
 	if err != nil {
 		log.Fatal(err, " - Line 104")
-  	}
+	}
 	c.JSON(http.StatusOK, map[string]interface{}{
-		"id" : id,
+		"id": id,
 	})
 }
 
 //Update
-func UpdateCar(c *gin.Context){
+func UpdateCar(c *gin.Context) {
 	id := c.Param("id")
 	dbpool := db.ConnectToDB()
 	defer dbpool.Close()
 
 	var jsonData Cart
 	jsonByte, err := c.GetRawData()
-	if err!=nil {
+	if err != nil {
 		panic(err)
 	}
 
 	json.Unmarshal(jsonByte, &jsonData)
-	fmt.Println(jsonData) 
+	name := strings.Trim(jsonData.Name.String, `"`)
 
 	sqlQuery := `
 		UPDATE "Cars"
@@ -143,21 +143,21 @@ func UpdateCar(c *gin.Context){
 		"Stock" = $3
 		WHERE "Car_ID" = $4;
 	`
-	commandTag,err  := dbpool.Exec(context.Background(), sqlQuery,
-							jsonData.Name.String,
-							jsonData.Rent_Price_Daily.String,
-							jsonData.Stock.Int32,
-							id)
+	commandTag, err := dbpool.Exec(context.Background(), sqlQuery,
+		name,
+		jsonData.Rent_Price_Daily.String,
+		jsonData.Stock.Int32,
+		id)
 	if err != nil {
 		panic(err)
 	}
 	if commandTag.RowsAffected() != 1 {
-		c.JSON(http.StatusOK, "Success")
+		c.JSON(http.StatusOK, "Update Success")
 	}
 }
 
 //Delete
-func DeleteCar(c *gin.Context){
+func DeleteCar(c *gin.Context) {
 	id := c.Param("id")
 	dbpool := db.ConnectToDB()
 	defer dbpool.Close()
@@ -166,11 +166,11 @@ func DeleteCar(c *gin.Context){
 		DELETE FROM "Cars"
 		WHERE "Car_ID" = $1;
 	`
-	commandTag,err := dbpool.Exec(context.Background() ,sqlQuery ,id)
+	commandTag, err := dbpool.Exec(context.Background(), sqlQuery, id)
 	if err != nil {
 		panic(err)
 	}
-	if commandTag.RowsAffected() != 1 {
+	if commandTag.RowsAffected() >= 1 {
 		c.JSON(http.StatusOK, "Success")
 	}
 }
